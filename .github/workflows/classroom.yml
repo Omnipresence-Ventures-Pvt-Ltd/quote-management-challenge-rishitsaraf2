@@ -1,0 +1,40 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Quote Creation test
+      id: quote-creation-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Quote Creation test
+        setup-command: npm install
+        command: npm test
+        timeout: 10
+        max-score: 5
+    - name: Quote Expiry test
+      id: quote-expiry-test
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Quote Expiry test
+        setup-command: npm install
+        command: npm test
+        timeout: 10
+        max-score: 5
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        QUOTE-CREATION-TEST_RESULTS: "${{steps.quote-creation-test.outputs.result}}"
+        QUOTE-EXPIRY-TEST_RESULTS: "${{steps.quote-expiry-test.outputs.result}}"
+      with:
+        runners: quote-creation-test,quote-expiry-test
